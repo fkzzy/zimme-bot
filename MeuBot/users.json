@@ -1,0 +1,12 @@
+{
+  "usuarios": {
+    "+5511987654321": {
+      "name": "Alice",
+      "rank": "membro"
+    },
+    "+5511998765432": {
+      "name": "Carlos",
+      "rank": "avançado"
+    }
+  }
+}
