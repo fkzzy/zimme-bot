@@ -34,28 +34,31 @@ function saveUsers() {
 }
 
 // Função para registrar dados de análise
-function registerAnalytics(userId, command) {
-  const timestamp = new Date().toISOString();
-  db.run('INSERT INTO analytics (user_id, command, timestamp) VALUES (?, ?, ?)', [userId, command, timestamp], (err) => {
-    if (err) console.error("Erro ao registrar análise:", err);
-  });
-
-  // Subir ranque
-  if (users[userId]) {
-    db.get('SELECT COUNT(*) as count FROM analytics WHERE user_id = ?', [userId], (err, row) => {
-      if (!err && row) {
-        const mensagensEnviadas = row.count || 0;
-        if (mensagensEnviadas >= 100 && users[userId].rank === 'membro') {
-          users[userId].rank = 'avançado';
-          saveUsers();
-          client.sendMessage(userId, 'Você subiu de ranque! Novo ranque: Avançado');
-        } else if (mensagensEnviadas >= 300 && users[userId].rank === 'avançado') {
-          users[userId].rank = 'experiente';
-          saveUsers();
-          client.sendMessage(userId, 'Você subiu de ranque! Novo ranque: Experiente');
-        }
-      }
+function registerAnalytics(client, userId, command) {
+  try {
+    const timestamp = new Date().toISOString();
+    db.run('INSERT INTO analytics (user_id, command, timestamp) VALUES (?, ?, ?)', [userId, command, timestamp], (err) => {
+      if (err) console.error("Erro ao registrar análise:", err);
     });
+    // Subir ranque
+    if (users[userId]) {
+      db.get('SELECT COUNT(*) as count FROM analytics WHERE user_id = ?', [userId], (err, row) => {
+        if (!err && row) {
+          const mensagensEnviadas = row.count || 0;
+          if (mensagensEnviadas >= 100 && users[userId].rank === 'membro') {
+            users[userId].rank = 'avançado';
+            saveUsers();
+            client.sendMessage(userId, 'Você subiu de ranque! Novo ranque: Avançado');
+          } else if (mensagensEnviadas >= 300 && users[userId].rank === 'avançado') {
+            users[userId].rank = 'experiente';
+            saveUsers();
+            client.sendMessage(userId, 'Você subiu de ranque! Novo ranque: Experiente');
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Erro ao registrar análise:", err);
   }
 }
 
@@ -71,7 +74,7 @@ client.on('ready', () => {
 });
 
 // Definir admins
-const admins = ['5524981411024', 'admin2']; // Adicione os números dos administradores aqui
+const admins = ['5524981411024', 'admin2'];
 
 // Comandos
 client.on('message', async (message) => {
@@ -81,7 +84,7 @@ client.on('message', async (message) => {
 
     // Registrar dados de análise
     if (text.startsWith('!')) {
-      registerAnalytics(number, text.split(' ')[0]);
+      registerAnalytics(client, number, text.split(' ')[0]);
     }
 
     // Menu
@@ -117,5 +120,4 @@ client.on('message', async (message) => {
             info += `*Nome:* ${users[number].name || 'Usuário'}\n`;
             info += `*Ranque:* ${users[number].rank || 'membro'}\n`;
             info += `*Mensagens enviadas:* ${row.count || 0}\n`;
-            info += "*Comandos disponíveis:*\n";
-            info += "!figurinha, !
+            info
